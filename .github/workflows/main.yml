@@ -102,7 +102,7 @@ jobs:
             cd ..
             zip -r app.ipa Payload
   
-        # Step 7: Upload Artifacts to GitHub Releases
+        # Step 7: Upload Artifacts to GitHub Releasesasdf
         - name: Push to Releases
           uses: ncipollo/release-action@v1
           with:
