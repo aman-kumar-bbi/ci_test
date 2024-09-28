@@ -1,3 +1,55 @@
+# on:
+#     pull_request:
+#       branches:
+#         - main
+#         - master
+#     push:
+#       branches:
+#         - main
+#         - master
+#         - develop
+# name: "Build & Release"
+# jobs:
+#     build:
+#       name: Build & Release
+#       runs-on: macos-latest
+#       steps:
+#         - uses: actions/checkout@v3
+#         - uses: actions/setup-java@v3
+#           with:
+#             distribution: 'zulu'
+#             java-version: '11'
+#         - uses: subosito/flutter-action@v2
+#           with:
+#             channel: 'stable'
+#             architecture: x64
+  
+#         - run: flutter build apk --release --split-per-abi
+#         - run: |
+#             flutter build ios --no-codesign
+#             cd build/ios/iphoneos
+#             mkdir Payload
+#             cd Payload
+#             ln -s ../Runner.app
+#             cd ..
+#             zip -r app.ipa Payload
+#         - name: Push to Releases
+#           uses: ncipollo/release-action@v1
+#           with:
+#             artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/app.ipa"
+#             tag: v1.0.${{ github.run_number }}
+#             token: ${{ secrets.TOKEN }}
+  
+  
+  
+  
+  
+  
+#   # push to master, main, develop
+#   # pull request on main master
+
+
+
 on:
     pull_request:
       branches:
@@ -8,24 +60,40 @@ on:
         - main
         - master
         - develop
+  
 name: "Build & Release"
 jobs:
     build:
       name: Build & Release
       runs-on: macos-latest
+  
       steps:
+        # Step 1: Checkout the code
         - uses: actions/checkout@v3
+  
+        # Step 2: Setup Java (for Flutter or other dependencies)
         - uses: actions/setup-java@v3
           with:
-            distribution: 'zulu'
+            distribution: 'zulu' # Make sure this version is available and correct
             java-version: '11'
+  
+        # Step 3: Setup Flutter (stable channel)
         - uses: subosito/flutter-action@v2
           with:
             channel: 'stable'
             architecture: x64
   
-        - run: flutter build apk --release --split-per-abi
-        - run: |
+        # Step 4: Run Tests (before building the app)
+        - name: Run Flutter Tests
+          run: flutter test
+  
+        # Step 5: Build Android APK (release)
+        - name: Build APK
+          run: flutter build apk --release --split-per-abi
+  
+        # Step 6: Build iOS IPA (release without code signing)
+        - name: Build iOS
+          run: |
             flutter build ios --no-codesign
             cd build/ios/iphoneos
             mkdir Payload
@@ -33,17 +101,12 @@ jobs:
             ln -s ../Runner.app
             cd ..
             zip -r app.ipa Payload
+  
+        # Step 7: Upload Artifacts to GitHub Releases
         - name: Push to Releases
           uses: ncipollo/release-action@v1
           with:
-            artifacts: "build/app/outputs/apk/release/*,build/ios/iphoneos/app.ipa"
+            artifacts: "build/app/outputs/apk/release/**/*.apk,build/ios/iphoneos/app.ipa"
             tag: v1.0.${{ github.run_number }}
             token: ${{ secrets.TOKEN }}
   
-  
-  
-  
-  
-  
-  # push to master, main, develop
-  # pull request on main master
